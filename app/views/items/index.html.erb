@@ -130,11 +130,10 @@
       <li class='list'>
         <%= link_to item_path(item.id) do %>
         <div class='item-img-content'>
-          <%= image_tag item.images[0], class: "item-img" %>
+          <%= image_tag item.image, class: "item-img" %>
           <%# sold outの表示 %>
           <% if item.item_transaction != nil %>
-          <%# <% if item.item_transaction.present? でも一緒の記述 %>
-          <%# item.item_transactionはmodel/item.rbでアソシエーションを組んでいる %>
+          
           <div class='sold-out'>
             <span>Sold Out!!</span>
           </div>
