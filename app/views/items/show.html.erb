@@ -72,6 +72,18 @@
           <th class="detail-item">発送日の目安</th>
           <td class="detail-value"><%= @item.sceduled_delivery.date %></td>
         </tr>
+
+      <%# タグが付いていたら表示させる %>
+        <tr>
+          <th class="detail-item">タグ</th>
+          <% if @item.tags.present? %>  
+            <td class="detail-value"><%= @item.tags[0].name %></td>
+          <% else %>
+            <td class="detail-value">　</td>
+          <% end %>   
+        </tr>
+      <%# タグが付いていたら表示させる %>
+
       </tbody>
     </table>
     <div class="option">

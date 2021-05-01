@@ -1,6 +1,6 @@
 class ItemsController < ApplicationController
   before_action :authenticate_user!, except: [:index, :show]
-  before_action :select_item, except: [:index, :new, :create]
+  before_action :select_item, except: [:index, :new, :create, :tag_search]
   
   def index
     @items = Item.all.order(created_at: :desc)
@@ -26,7 +26,9 @@ class ItemsController < ApplicationController
 
 
   def edit
-    # 出品者だけが編集ページに遷移できるように制限している
+    form = [@item, @item.tags[0]]
+    @item_form = ItemForm.new(form)
+    # binding.pry
     return redirect_to root_path if current_user.id != @item.user.id
     end
     
@@ -41,6 +43,14 @@ class ItemsController < ApplicationController
       redirect_to root_path
     end
 
+  def tag_search
+    # searchアクションと区別する
+    # 空の入力があった場合、空の配列を返す
+    return render json: {keyword: []} if params[:tag_name] == ""
+    # return nil if params[:tag_name] == ""
+    tag = Tag.where(['name LIKE ?', "%#{params[:tag_name]}%"] )
+    render json:{ keyword: tag}
+  end
 
   private
   def item_params
@@ -53,7 +63,8 @@ class ItemsController < ApplicationController
       :shipping_fee_status_id,
       :prefecture_id,
       :sceduled_delivery_id,
-      :price
+      :price,
+      :tag_name
     ).merge(user_id: current_user.id)
   end
 

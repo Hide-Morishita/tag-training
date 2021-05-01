@@ -83,6 +83,13 @@
         <%= f.collection_select(:sceduled_delivery_id, SceduledDelivery.all, :id, :date, {}, {class:"select-box", id:"item-scheduled-delivery"}) %>
       </div>
     </div>
+    <div class="weight-bold-text">
+      タグ
+      <span class="form-any">任意</span>
+    </div>
+    <%= f.text_area :tag_name, class:"items-text", id:"tag-name-form", placeholder:"タグ名" %>
+    <div id="tag-search-result">
+    </div>
     <%# /配送について %>
 
     <%# 販売価格 %>

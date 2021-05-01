@@ -1,17 +1,14 @@
 <%# cssは商品出品のものを併用しています。
 app/assets/stylesheets/items/new.css %>
-a
 <div class="items-sell-contents">
   <header class="items-sell-header">
     <%= link_to image_tag('furima-logo-color.png' , size: '185x50'), "/" %>
   </header>
   <div class="items-sell-main">
     <h2 class="items-sell-title">商品の情報を入力</h2>
-    <%= form_with model:@item,local: true do |f| %>
+    <%= form_with model: @item_form, url: item_path, method: :patch, local: true do |f| %>
 
-    <%# インスタンスを渡して、エラー発生時にメッセージが表示されるようにしましょう。%>
     <%= render 'shared/error_messages', model: f.object %>
-    <%# //インスタンスを渡して、エラー発生時にメッセージが表示されるようにしましょう。%>
 
     <%# 出品画像 %>
     <div class="img-upload">
@@ -85,6 +82,13 @@ a
         </div>
         <%= f.collection_select(:sceduled_delivery_id, SceduledDelivery.all, :id, :date, {}, {class:"select-box", id:"item-scheduled-delivery"}) %>
       </div>
+    </div>
+    <div class="weight-bold-text">
+      タグ
+      <span class="form-any">任意</span>
+    </div>
+    <%= f.text_area :tag_name, class:"items-text", id:"tag-name-form", placeholder:"タグ名" %>
+    <div id="tag-search-result">
     </div>
     <%# /配送について %>
 

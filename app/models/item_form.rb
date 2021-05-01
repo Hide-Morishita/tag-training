@@ -6,9 +6,14 @@ class ItemForm
                 :shipping_fee_status_id, :prefecture_id, :sceduled_delivery_id,
                 :price,
                 :image,
-                :user_id
+                :user_id,
+                :tag_name,
+                # 編集機能で必要
+                :id,
+                :created_at,
+                :updated_at
                )
-
+  # :tag_nameにしているのは、itemの:nameと区別するため
   # <<バリデーション（ほぼitem.rbの流用）>>
   
   def price_int
@@ -39,7 +44,7 @@ class ItemForm
   validates_inclusion_of :price, in: 300..9_999_999, message: 'Out of setting range'
 
   def save
-    item = Item.new(
+    item = Item.create(
       name: name,
       info: info,
       price: price,
@@ -51,7 +56,12 @@ class ItemForm
       user_id: user_id,
       image: image)
 
-    item.save
+    ## 同じタグが作成されることを防ぐため、first_or_initializeで既に存在しているかチェックする
+    tag = Tag.where(name: tag_name).first_or_initialize
+    tag.save
+
+    ItemTagRelation.create(tag_id: tag.id, item_id: item.id)
+
 
   end
 

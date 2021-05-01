@@ -9,7 +9,8 @@ class Item < ApplicationRecord
   belongs_to :user
   has_one :item_transaction
   # 親にhas_one子にbelongs_toを記述してアソシエーションを組む
-
+  has_many :item_tag_relations, dependent: :destroy
+  has_many :tags, through: :item_tag_relations
    # <<バリデーション>>
 
   # 値が入っているか検証
