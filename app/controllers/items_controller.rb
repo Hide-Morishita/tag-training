@@ -26,16 +26,23 @@ class ItemsController < ApplicationController
 
 
   def edit
-    form = [@item, @item.tags[0]]
-    @item_form = ItemForm.new(form)
-    # binding.pry
+    #オブジェクトの情報をハッシュ形式に変更する、引数として持たせるため
+    item_attributes = @item.attributes
+    @item_form = ItemForm.new(item_attributes)
+    @item_form.tag_name = @item.tags[0].name if @item.tags[0].present?
+    @item_form.image = @item.image.blob
     return redirect_to root_path if current_user.id != @item.user.id
-    end
-    
+  end
+  
     def update
-       @item.update(item_params) if current_user.id == @item.user.id
-       return redirect_to item_path if @item.valid?
-       render 'edit'
+      @item_form = ItemForm.new(item_params)
+      @item_form.price_int
+      @item_form.image = @item.image.blob
+      if @item_form.valid?
+        @item_form.update(item_params, @item)
+        return redirect_to item_path(@item)
+      end
+      render 'edit'
     end
 
     def destroy

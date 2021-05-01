@@ -62,7 +62,21 @@ class ItemForm
 
     ItemTagRelation.create(tag_id: tag.id, item_id: item.id)
 
+  end
+
+  def update(params, item)
+    # params(hash)からtag_nameを削除しておく。itemテーブルにはtag_nameが存在しないため
+    params.delete(:tag_name)
+    item_form = Item.update(params)
+
+    ## 同じタグが作成されることを防ぐため、first_or_initializeで既に存在しているかチェックする
+    tag = Tag.where(name: tag_name).first_or_initialize
+    tag.save
+    
+    # binding.pry
+    ItemTagRelation.update(tag_id: tag.id, item_id: item.id)
 
   end
+
 
 end

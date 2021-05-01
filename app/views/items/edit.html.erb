@@ -21,6 +21,7 @@ app/assets/stylesheets/items/new.css %>
           クリックしてファイルをアップロード
         </p>
         <%= f.file_field :image, id:"item-image" %>
+        <%= image_tag @item_form.image, class: "item-img" %>
       </div>
     </div>
     <%# /出品画像 %>
