@@ -38,8 +38,10 @@ class ItemsController < ApplicationController
       @item_form = ItemForm.new(item_params)
       @item_form.price_int
       @item_form.image = @item.image.blob
+      @item_tag = ItemTagRelation.find(params[:id])
+      # binding.pry
       if @item_form.valid?
-        @item_form.update(item_params, @item)
+        @item_form.update(item_params, @item, @item_tag)
         return redirect_to item_path(@item)
       end
       render 'edit'

@@ -64,17 +64,19 @@ class ItemForm
 
   end
 
-  def update(params, item)
+  def update(params, item, item_tag)
     # params(hash)からtag_nameを削除しておく。itemテーブルにはtag_nameが存在しないため
     params.delete(:tag_name)
-    item_form = Item.update(params)
+    # 編集した商品だけ更新する
+    item_form = item.update(params)
 
     ## 同じタグが作成されることを防ぐため、first_or_initializeで既に存在しているかチェックする
     tag = Tag.where(name: tag_name).first_or_initialize
     tag.save
     
     # binding.pry
-    ItemTagRelation.update(tag_id: tag.id, item_id: item.id)
+    # 該当する商品に紐づく情報だけ更新する
+    item_tag.update(tag_id: tag.id, item_id: item.id)
 
   end
 
