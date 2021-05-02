@@ -68,7 +68,9 @@ class ItemForm
     # params(hash)からtag_nameを削除しておく。itemテーブルにはtag_nameが存在しないため
     params.delete(:tag_name)
     # 編集した商品だけ更新する
-    item_form = item.update(params)
+    item.update(params)
+    # Item.update(params)にしてしまうと、itemテーブル全ての商品が更新されてしまう
+
 
     ## 同じタグが作成されることを防ぐため、first_or_initializeで既に存在しているかチェックする
     tag = Tag.where(name: tag_name).first_or_initialize
@@ -77,6 +79,8 @@ class ItemForm
     # binding.pry
     # 該当する商品に紐づく情報だけ更新する
     item_tag.update(tag_id: tag.id, item_id: item.id)
+    # ItemTagRelation.update(tag_id: tag.id, item_id: item.id)
+    # 上記の記述にしてしまうと、中間テーブル全ての情報が更新されてしまう
 
   end
 

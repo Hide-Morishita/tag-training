@@ -34,23 +34,25 @@ class ItemsController < ApplicationController
     return redirect_to root_path if current_user.id != @item.user.id
   end
   
-    def update
-      @item_form = ItemForm.new(item_params)
-      @item_form.price_int
-      @item_form.image = @item.image.blob
-      @item_tag = ItemTagRelation.find(params[:id])
-      # binding.pry
-      if @item_form.valid?
-        @item_form.update(item_params, @item, @item_tag)
-        return redirect_to item_path(@item)
-      end
-      render 'edit'
+  def update
+    @item_form = ItemForm.new(item_params)
+    @item_form.price_int
+    @item_form.image = @item.image.blob
+    @item_tag = ItemTagRelation.find(params[:id])
+    # binding.pry
+    if @item_form.valid?
+      # updateメソッドの呼び出し
+      # 引数(formの内容、編集する商品の情報、編集する商品に紐づく中間テーブルの情報)
+      @item_form.update(item_params, @item, @item_tag)
+      return redirect_to item_path(@item)
     end
+    render 'edit'
+  end
 
-    def destroy
-      @item.destroy if current_user.id == @item.user.id
-      redirect_to root_path
-    end
+  def destroy
+    @item.destroy if current_user.id == @item.user.id
+    redirect_to root_path
+  end
 
   def tag_search
     # searchアクションと区別する
