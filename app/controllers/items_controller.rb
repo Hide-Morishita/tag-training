@@ -38,8 +38,15 @@ class ItemsController < ApplicationController
     @item_form = ItemForm.new(item_params)
     @item_form.price_int
     @item_form.image = @item.image.blob
-    @item_tag = ItemTagRelation.find(params[:id])
     # binding.pry
+    if @item.tags[0].present?
+      if @item_form.tag_name.present?
+        tag = Tag.where(name: @item_form.tag_name).first_or_initialize
+        if tag.id.present?
+          @item_tag = ItemTagRelation.find(tag.id) 
+        end
+      end
+    end
     if @item_form.valid?
       # updateメソッドの呼び出し
       # 引数(formの内容、編集する商品の情報、編集する商品に紐づく中間テーブルの情報)

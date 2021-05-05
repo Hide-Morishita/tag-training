@@ -9,6 +9,7 @@ class ItemForm
                 :user_id,
                 :tag_name,
                 # 編集機能で必要
+                # item_attributes = @item.attributesでハッシュ形式に切り替えている
                 :id,
                 :created_at,
                 :updated_at
@@ -43,6 +44,9 @@ class ItemForm
   # 金額の範囲
   validates_inclusion_of :price, in: 300..9_999_999, message: 'Out of setting range'
 
+  # タグのバリデーション
+  validates :tag_name, length: {maximum: 5}
+
   def save
     item = Item.create(
       name: name,
@@ -58,7 +62,9 @@ class ItemForm
 
     ## 同じタグが作成されることを防ぐため、first_or_initializeで既に存在しているかチェックする
     tag = Tag.where(name: tag_name).first_or_initialize
-    tag.save
+    if tag_name.present?
+      tag.save
+    end
 
     ItemTagRelation.create(tag_id: tag.id, item_id: item.id)
 
@@ -74,13 +80,23 @@ class ItemForm
 
     ## 同じタグが作成されることを防ぐため、first_or_initializeで既に存在しているかチェックする
     tag = Tag.where(name: tag_name).first_or_initialize
-    tag.save
+
+    if tag_name.present?
+      tag.save
+    end
     
     # binding.pry
-    # 該当する商品に紐づく情報だけ更新する
-    item_tag.update(tag_id: tag.id, item_id: item.id)
-    # ItemTagRelation.update(tag_id: tag.id, item_id: item.id)
-    # 上記の記述にしてしまうと、中間テーブル全ての情報が更新されてしまう
+    if item_tag.blank?
+      # この記述だと新しい紐付けの情報を生成してしまう
+      item_tag = ItemTagRelation.create(tag_id: tag.id, item_id: item.id)
+      # 該当する商品に紐づく情報だけ更新する
+      item_tag.update(tag_id: tag.id, item_id: item.id) 
+      # ItemTagRelation.update(tag_id: tag.id, item_id: item.id)
+      # 上記の記述にしてしまうと、中間テーブル全ての情報が更新されてしまう
+      return
+    end
+
+    item_tag.update(tag_id: tag.id, item_id: item.id) 
 
   end
 
