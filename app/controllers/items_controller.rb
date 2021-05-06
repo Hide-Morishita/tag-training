@@ -42,7 +42,8 @@ class ItemsController < ApplicationController
     if @item.tags[0].present?
       if @item_form.tag_name.present?
         tag = Tag.where(name: @item_form.tag_name).first_or_initialize
-        if tag.id.present?
+        # binding.pry
+        if tag.item_tag_relations.present?
           @item_tag = ItemTagRelation.find(tag.id) 
         end
       end

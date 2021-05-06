@@ -85,18 +85,31 @@ class ItemForm
       tag.save
     end
     
-    # binding.pry
-    if item_tag.blank?
-      # この記述だと新しい紐付けの情報を生成してしまう
-      item_tag = ItemTagRelation.create(tag_id: tag.id, item_id: item.id)
-      # 該当する商品に紐づく情報だけ更新する
-      item_tag.update(tag_id: tag.id, item_id: item.id) 
-      # ItemTagRelation.update(tag_id: tag.id, item_id: item.id)
-      # 上記の記述にしてしまうと、中間テーブル全ての情報が更新されてしまう
-      return
+    # タグの登録なし、新規タグの登録
+    if tag_name.blank?
+      if item_tag.blank?
+        # デフォルトでは、has_many :throughの関連付けの場合はdelete_allが渡されている
+        item.item_tag_relations.delete_all
+        # ItemTagRelation.update(tag_id: tag.id, item_id: item.id)
+        # 上記の記述にしてしまうと、中間テーブル全ての情報が更新されてしまう
+        return
+      end
     end
 
-    item_tag.update(tag_id: tag.id, item_id: item.id) 
+    # 商品に紐付いた中間テーブルの情報が空の場合
+    if item.item_tag_relations.blank?
+      # 商品に紐付く中間テーブルに情報を保存する
+      item.item_tag_relations.create(tag_id: tag.id, item_id: item.id)
+    end
+    
+    if item_tag.present?
+      item_tag.update(tag_id: tag.id, item_id: item.id)
+      return
+    else
+      item.item_tag_relations.update(tag_id: tag.id, item_id: item.id)
+      return
+    end
+    
 
   end
 
