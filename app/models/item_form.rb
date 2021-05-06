@@ -85,7 +85,7 @@ class ItemForm
       tag.save
     end
     
-    # タグの登録なし、新規タグの登録
+    # 中間テーブルの情報なし
     if tag_name.blank?
       if item_tag.blank?
         # デフォルトでは、has_many :throughの関連付けの場合はdelete_allが渡されている
