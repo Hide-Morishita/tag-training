@@ -1,7 +1,7 @@
 <%= render "shared/header" %>
 
 <%# 商品の概要 %>
-<div class="item-show">
+<!--<div class="item-show">
   <div class="item-box">
     <h2 class="name">
       <%= @item.name %>
@@ -109,7 +109,7 @@
       後ろの商品 ＞
     </a>
   </div>
-  <a href="#" class='another-item'><%= "商品のカテゴリー名" %>をもっと見る</a>
-</div>
+  <a href="#" class='another-item'><%= @item.category.name %>をもっと見る</a>
+</div> -->
 
 <%= render "shared/footer" %>
