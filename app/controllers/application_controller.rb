@@ -9,7 +9,6 @@ class ApplicationController < ActionController::Base
       :sign_up, keys: [:nickname, :email, :birth_day, :first_name, :last_name, :first_name_kana, :last_name_kana]
     )
   end
-  # この記述によってテーブルに指定のパラメーターを保存することを許可している。privateの中に入っていればOK
 
   private
 

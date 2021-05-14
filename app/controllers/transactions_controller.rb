@@ -1,20 +1,15 @@
 # 購入のコントローラー
 
 class TransactionsController < ApplicationController
+  before_action :authenticate_user!, only: [:index, :create]
   before_action :select_item, only: [:index, :create]
-  # これがあるからcreateでindexに戻っても@item.image等の情報が表示される。これ書かないならcreateに    @item = Item.find(params[:item_id])が必要
-  before_action :authenticate_user!, only: [:index]
-  # devise入れてたら使える。ログインしてなかったらログイン画面に遷移させる
+  before_action :move_to_index, only: [:index, :create]
 
   def index
-    return redirect_to root_path if current_user.id == select_item.user_id || select_item.item_transaction != nil
-
     @item_transaction = PayForm.new
   end
-  # ここを通って購入画面に進む
 
   def create
-    # binding.pry
     @item_transaction = PayForm.new(item_transaction_params)
     if @item_transaction.valid?
       pay_item
@@ -48,5 +43,9 @@ class TransactionsController < ApplicationController
       card: item_transaction_params[:token],
       currency: 'jpy'
     )
+  end
+
+  def move_to_index
+    redirect_to root_path if current_user.id == @item.user.id || @item.item_transaction.present?
   end
 end

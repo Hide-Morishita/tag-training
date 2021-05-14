@@ -1,7 +1,7 @@
 <%= render "shared/header" %>
 
 <%# 商品の概要 %>
-<!--<div class="item-show">
+<div class="item-show">
   <div class="item-box">
     <h2 class="name">
       <%= @item.name %>
@@ -43,7 +43,7 @@
     <%# //ログインしているユーザーと出品しているユーザーが、同一人物の場合と同一人物ではない場合で、処理を分けましょう %>
 
     <div class="item-explain-box">
-      <span><%= "商品説明" %></span>
+      <span><%= @item.info %></span>
     </div>
     <table class="detail-table">
       <tbody>
@@ -72,6 +72,18 @@
           <th class="detail-item">発送日の目安</th>
           <td class="detail-value"><%= @item.sceduled_delivery.date %></td>
         </tr>
+
+      <%# タグが付いていたら表示させる %>
+        <tr>
+          <th class="detail-item">タグ</th>
+          <% if @item.tags.present? %>  
+            <td class="detail-value"><%= @item.tags[0].name %></td>
+          <% else %>
+            <td class="detail-value">　</td>
+          <% end %>   
+        </tr>
+      <%# タグが付いていたら表示させる %>
+
       </tbody>
     </table>
     <div class="option">
@@ -110,6 +122,6 @@
     </a>
   </div>
   <a href="#" class='another-item'><%= @item.category.name %>をもっと見る</a>
-</div> -->
+</div>
 
 <%= render "shared/footer" %>
