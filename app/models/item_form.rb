@@ -27,7 +27,6 @@ class ItemForm
     validates :name
     validates :info
     validates :price
-
   end
 
   with_options numericality: { other_than: 0, message: 'Select' } do
@@ -77,7 +76,6 @@ class ItemForm
     item.update(params)
     # Item.update(params)にしてしまうと、itemテーブル全ての商品が更新されてしまう
 
-
     ## 同じタグが作成されることを防ぐため、first_or_initializeで既に存在しているかチェックする
     tag = Tag.where(name: tag_name).first_or_initialize
 
@@ -85,15 +83,12 @@ class ItemForm
       tag.save
     end
     
-    # 中間テーブルの情報なし
-    if tag_name.blank?
-      if item_tag.blank?
-        # デフォルトでは、has_many :throughの関連付けの場合はdelete_allが渡されている
-        item.item_tag_relations.delete_all
-        # ItemTagRelation.update(tag_id: tag.id, item_id: item.id)
-        # 上記の記述にしてしまうと、中間テーブル全ての情報が更新されてしまう
-        return
-      end
+    # フォームオブジェクトに空のタグ情報が送られてきたとき"かつ"コントローラーから送られてきた中間テーブルの情報が空の場合の処理
+    if tag_name.blank? && item_tag.blank?
+      # 商品に紐づく中間テーブルの情報を削除する
+      # デフォルトでは、has_many :throughの関連付けの場合はdelete_allが渡されている
+      item.item_tag_relations.delete_all
+      return
     end
 
     # 商品に紐付いた中間テーブルの情報が空の場合
@@ -102,12 +97,11 @@ class ItemForm
       item.item_tag_relations.create(tag_id: tag.id, item_id: item.id)
     end
     
+    # コントローラーから送られてきた中間テーブルの情報が、空ではなかったときの処理
     if item_tag.present?
       item_tag.update(tag_id: tag.id, item_id: item.id)
-      return
     else
       item.item_tag_relations.update(tag_id: tag.id, item_id: item.id)
-      return
     end
     
 
