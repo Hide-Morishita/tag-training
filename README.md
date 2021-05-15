@@ -3,10 +3,8 @@
 ## 参考資料
 
 - カリキュラム
-https://master.tech-camp.in/v2/curriculums/4996
 
 - ３日で終わる追加実装
-https://qiita.com/rabi0102/private/d389c58fe7913265dcc7
 
 ## タグ付け実装時のポイント
 
@@ -85,12 +83,48 @@ controllers/items_controller.rb
 
 #### 1.editでフォームオブジェクトのインスタンスを生成するときに注意が必要
 
-編集ページ(edit.html.erb)のform_withに、modelを持たせるためにコントローラー内のeditアクションにて
+編集ページ(edit.html.erb)のform_withに、modelを持たせるために
+
+コントローラー内のeditアクションにて
 
 フォームオブジェクトのインスタンスを生成する必要がありますが、この際に注意が必要です。
 
 編集なので、商品の情報を持たせる必要がありますが、findメソッドで呼び出した商品の情報をそのまま使用することができません。
 
+before_actionなどで呼び出している以下の記述がそのまま使用できないということになります。
+
+```ruby
+  @item = Item.find(params[:id])
+```
+
+editアクションにて以下の記述にした際にエラーが発生します。
+
+```ruby
+  def edit
+    @item_form = ItemForm.new(@item)
+    # 省略
+  end
+```
+
+<img width="1439" alt="スクリーンショット 2021-05-15 16 22 37" src="https://user-images.githubusercontent.com/64821613/118351988-f03bb280-b599-11eb-9be7-b6bbc698f675.png">
+
+内容としては、引数にはハッシュの情報を渡してほしいとのこと
+
+editアクション内に`binding.pry`を入れて@itemの情報を確認してみます。
+
+<img width="546" alt="スクリーンショット 2021-05-15 16 27 49" src="https://user-images.githubusercontent.com/64821613/118352382-1c583300-b59c-11eb-955f-d432b476df29.png">
+
+情報は取得できていますが、あくまでオブジェクトの属性であって、ハッシュ形式ではなさそうです。
+
+では、取得したオブジェクトの情報をハッシュ形式にするにはどうしたらいいのか？
+
+そこで使うのが、`attributesメソッド`です。
+
+これは、オブジェクトの属性値をハッシュで取得してくれるメソッドになります。
+
+3日で終わる追加実装にもこちらの内容が記述されていますので確認してみるといいかもしれません。
+
+<img width="432" alt="スクリーンショット 2021-05-15 16 28 21" src="https://user-images.githubusercontent.com/64821613/118352387-224e1400-b59c-11eb-94be-302e0ea53d14.png">
 
 
 
