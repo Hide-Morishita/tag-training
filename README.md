@@ -213,9 +213,9 @@ controllers/items_controller.rb
 
 ![a24105ce03f423b2dd210724b7acda69](https://user-images.githubusercontent.com/64821613/118968535-ff11d300-b9a6-11eb-9828-02dd54a4448f.gif)
 
-編集ページに遷移することが可能になったので、いよいよ編集機能を実装していきます。
+編集ページに遷移することが可能になりました。
 
-まず、編集機能でバリデーションを通過できるか確認していきたいと思います。
+次に編集機能でバリデーションを通過できるか確認していきたいと思います。
 
 createアクション同様にpriceを数値に変えておきましょう。
 
@@ -283,9 +283,9 @@ imageはActiveStorageを使用していますので、以下のように記述�
 
 <img width="715" alt="スクリーンショット 2021-05-20 20 37 06" src="https://user-images.githubusercontent.com/64821613/118972826-f374db00-b9ab-11eb-95ba-cf08a6f28466.png">
 
-画像の情報が取得できていることが確認できるかと思います。
+ターミナルに打ち込んでみると、画像の情報が取得できていることが確認できるかと思います。
 
-では、こちらをフォームオブジェクトに渡していきましょう。
+では、取得したをフォームオブジェクトに渡していきましょう。
 
 edit、updateアクションを以下のように記述していきます。
 
@@ -305,7 +305,6 @@ edit、updateアクションを以下のように記述していきます。
     @item_form.image = @item.image.blob
 
     if @item_form.valid?
-      # バリデーションを通過するか確認する
       binding.pry 
       return redirect_to item_path(@item)
     end
@@ -324,4 +323,50 @@ updateメソッドは、saveメソッド同様にフォームオブジェクト�
 updateの処理では、様々なパターンが考えられます。
 
 <img width="1033" alt="スクリーンショット 2021-05-20 21 16 13" src="https://user-images.githubusercontent.com/64821613/118977138-cd056e80-b9b0-11eb-800b-50c200b017ae.png">
+
+編集機能が難しいのは、これらのパターンをクリアする必要があるからだと思っています。
+
+まずは、フォームオブジェクト内にupdateメソッドの定義をしていきます。
+
+ここから編集する
+```ruby
+  def update(params, item, item_tag)
+    # params(hash)からtag_nameを削除しておく。itemテーブルにはtag_nameが存在しないため
+    params.delete(:tag_name)
+    # 編集した商品だけ更新する
+    item.update(params)
+    # Item.update(params)にしてしまうと、itemテーブル全ての商品が更新されてしまう
+
+    ## 同じタグが作成されることを防ぐため、first_or_initializeで既に存在しているかチェックする
+    tag = Tag.where(name: tag_name).first_or_initialize
+
+    if tag_name.present?
+      tag.save
+    end
+    
+    # フォームオブジェクトに空のタグ情報が送られてきたとき"かつ"コントローラーから送られてきた中間テーブルの情報が空の場合の処理
+    if tag_name.blank? && item_tag.blank?
+      # 商品に紐づく中間テーブルの情報を削除する
+      # デフォルトでは、has_many :throughの関連付けの場合はdelete_allが渡されている
+      item.item_tag_relations.delete_all
+      return
+    end
+
+    # 商品に紐付いた中間テーブルの情報が空の場合
+    if item.item_tag_relations.blank?
+      # 商品に紐付く中間テーブルに情報を保存する
+      item.item_tag_relations.create(tag_id: tag.id, item_id: item.id)
+    end
+    
+    # コントローラーから送られてきた中間テーブルの情報が、空ではなかったときの処理
+    if item_tag.present?
+      item_tag.update(tag_id: tag.id, item_id: item.id)
+    else
+      item.item_tag_relations.update(tag_id: tag.id, item_id: item.id)
+    end
+    
+
+  end
+```
+
 
