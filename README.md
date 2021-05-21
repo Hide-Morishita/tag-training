@@ -1,6 +1,6 @@
 # タグ付け
 
-## 参考資料
+## 参考にした資料
 
 - カリキュラム
 
@@ -195,7 +195,6 @@ attr_accessor(
 controllers/items_controller.rb
 ```ruby
   def edit
-    #オブジェクトの情報をハッシュ形式に変更する、引数として持たせるため
     item_attributes = @item.attributes
     @item_form = ItemForm.new(item_attributes)
     # 以下の記述を追記する
@@ -214,6 +213,8 @@ controllers/items_controller.rb
 ![a24105ce03f423b2dd210724b7acda69](https://user-images.githubusercontent.com/64821613/118968535-ff11d300-b9a6-11eb-9828-02dd54a4448f.gif)
 
 編集ページに遷移することが可能になりました。
+
+#### 2-2.バリデーションチェックをしてみる
 
 次に編集機能でバリデーションを通過できるか確認していきたいと思います。
 
@@ -316,7 +317,7 @@ edit、updateアクションを以下のように記述していきます。
 
 やっとupdateの処理に進むことができそうです。
 
-#### 2-*.updateの処理を記述
+#### 2-3.updateの処理を記述
 
 updateメソッドは、saveメソッド同様にフォームオブジェクト内に記述してコントローラー側で呼び出します。
 
