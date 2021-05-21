@@ -370,10 +370,13 @@ end
   ```
   
   ①では、「商品に紐付いたタグの情報"かつ"フォームオブジェクトにタグの情報があるか」を確認しています。
-    → ①の条件が通らなかった場合は、タグの情報が空であることがわかります。
+  
+  → ①の条件が通らなかった場合は、タグの情報が空であることがわかります。
+  
   ②では、①の条件を満たしている場合(タグの情報があった場合)、そのタグに紐づく中間テーブルの情報があるか確認しています。
-    → find_byで情報を取得しているのは、中間テーブルのtag_id(外部キー)とtag.id(タグテーブルの主キー)が一致しているか確認するためです。
-      findの場合は、id(中間テーブルの主キー)しか検索できないため使用していません。
+  
+  → find_byで情報を取得しているのは、中間テーブルのtag_id(外部キー)とtag.id(タグテーブルの主キー)が一致しているか確認するためです。
+    findの場合は、id(中間テーブルの主キー)しか検索できないため使用していません。
   
 
 次にフォームオブジェクトの記述内容を見ていきましょう。
@@ -415,5 +418,94 @@ models/item_form.rb
   end
 ```
 
-①では、params(第一引数)からtag_nameを削除しておく。
-  → itemテーブルにはtag_nameが存在しないため、商品の情報を編集しようとするとエラーが発生してしまう
+①では、params(第一引数)からtag_nameを削除しておきます。
+
+→ itemテーブルにはtag_nameが存在しないため、商品にの情報を編集しようとするとエラーが発生してしまいます。
+  商品の情報、タグ、中間テーブルの情報は別々に編集、保存していきます。
+    
+ちなみにこのようなエラーが発生します。
+
+<img width="1179" alt="スクリーンショット 2021-05-20 21 27 03" src="https://user-images.githubusercontent.com/64821613/119115209-e0bcdd80-ba61-11eb-8305-d10276bacbcb.png">
+
+②では、第二引数(編集を行う商品)の情報を編集しています。
+
+③では、「フォームオブジェクトに空のタグ情報が送られてきたとき"かつ"コントローラーから送られてきた中間テーブルの情報が空の場合」の処理を記述しています。
+
+→ こちらは付いていたタグを外すために必要になります。
+タグを外した場合、それ以上の処理は必要ないため、`return`を使ってコントローラー側に処理を返しています。
+
+④では、③に当てはまらない場合で「商品に紐付いた中間テーブルの情報が空の場合」の処理になります。
+
+→ 商品に紐付いた中間テーブルの情報を保存しています。
+
+⑤では、「コントローラーから送られてきた中間テーブルの情報が、空ではなかった場合」と「空の場合」の処理をしています。
+
+→ 「空ではなかった場合」は、引数で送られてきた中間テーブルの情報を編集します。
+
+→ 「空の場合」は、商品に紐づく中間テーブルの情報を編集します。
+  
+編集機能は難易度が高く難しい実装にはなりますが、カリキュラムの内容で学んできた内容+@で実装することも可能です。
+
+実装の参考になれば幸いです。
+
+### 編集機能完成コード
+
+controllers/items_controller.rb
+
+```ruby
+  def edit
+    item_attributes = @item.attributes
+    @item_form = ItemForm.new(item_attributes)
+    @item_form.tag_name = @item.tags[0].name if @item.tags[0].present?
+    @item_form.image = @item.image.blob
+  end
+  
+  def update
+    @item_form = ItemForm.new(item_params)
+    @item_form.price_int
+    @item_form.image = @item.image.blob
+
+    if @item.tags[0].present? && @item_form.tag_name.present?
+      tag = Tag.where(name: @item_form.tag_name).first_or_initialize
+      if tag.item_tag_relations.present?
+        @item_tag = ItemTagRelation.find_by(tag_id: tag.id) 
+      end
+    end
+    
+    if @item_form.valid?
+      @item_form.update(item_params, @item, @item_tag)
+      return redirect_to item_path(@item)
+    end
+    render 'edit'
+  end
+```
+
+models/item_form.rb
+
+```ruby
+  def update(params, item, item_tag)
+    params.delete(:tag_name)
+    item.update(params)
+
+    tag = Tag.where(name: tag_name).first_or_initialize
+    if tag_name.present?
+      tag.save
+    end
+    
+    if tag_name.blank? && item_tag.blank?
+      item.item_tag_relations.delete_all
+      return
+    end
+
+    if item.item_tag_relations.blank?
+      item.item_tag_relations.create(tag_id: tag.id, item_id: item.id)
+    end
+    
+    if item_tag.present?
+      item_tag.update(tag_id: tag.id, item_id: item.id)
+    else
+      item.item_tag_relations.update(tag_id: tag.id, item_id: item.id)
+    end
+    
+  end
+```
