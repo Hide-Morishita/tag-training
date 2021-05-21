@@ -328,14 +328,63 @@ updateの処理では、様々なパターンが考えられます。
 
 まずは、フォームオブジェクト内にupdateメソッドの定義をしていきます。
 
-ここから編集する
+今回のポイントとしては、updateメソッドを呼び出す際に引数を3つ渡していることです。
+
+```ruby
+# コントローラー側
+@item_form.update(item_params, @item, @item_tag)
+
+# フォームオブジェクト側
+def update(params, item, item_tag)
+  # 省略
+end
+```
+
+- 第一引数・・・編集ページから送られてきた商品の情報
+- 第二引数・・・編集を行う商品
+- 第三引数・・・中間テーブルの情報
+
+まずはコントローラーの記述を見ていきます。
+
+```ruby
+  def update
+    @item_form = ItemForm.new(item_params)
+    @item_form.price_int # priceをinteger型に変更
+    @item_form.image = @item.image.blob
+
+    # ①
+    if @item.tags[0].present? && @item_form.tag_name.present?
+      tag = Tag.where(name: @item_form.tag_name).first_or_initialize
+      # ②
+      if tag.item_tag_relations.present?
+        @item_tag = ItemTagRelation.find_by(tag_id: tag.id) 
+      end
+    end
+    
+    if @item_form.valid?
+      @item_form.update(item_params, @item, @item_tag)
+      return redirect_to item_path(@item)
+    end
+    render 'edit'
+  end
+  ```
+  
+  ①では、「商品に紐付いたタグの情報"かつ"フォームオブジェクトにタグの情報があるか」を確認しています。
+    → ①の条件が通らなかった場合は、タグの情報が空であることがわかります。
+  ②では、①の条件を満たしている場合(タグの情報があった場合)、そのタグに紐づく中間テーブルの情報があるか確認しています。
+    → find_byで情報を取得しているのは、中間テーブルのtag_id(外部キー)とtag.id(タグテーブルの主キー)が一致しているか確認するためです。
+      findの場合は、id(中間テーブルの主キー)しか検索できないため使用していません。
+  
+
+次にフォームオブジェクトの記述内容を見ていきましょう。
+
+models/item_form.rb
 ```ruby
   def update(params, item, item_tag)
-    # params(hash)からtag_nameを削除しておく。itemテーブルにはtag_nameが存在しないため
+    # ①
     params.delete(:tag_name)
-    # 編集した商品だけ更新する
+    # ②
     item.update(params)
-    # Item.update(params)にしてしまうと、itemテーブル全ての商品が更新されてしまう
 
     ## 同じタグが作成されることを防ぐため、first_or_initializeで既に存在しているかチェックする
     tag = Tag.where(name: tag_name).first_or_initialize
@@ -344,29 +393,27 @@ updateの処理では、様々なパターンが考えられます。
       tag.save
     end
     
-    # フォームオブジェクトに空のタグ情報が送られてきたとき"かつ"コントローラーから送られてきた中間テーブルの情報が空の場合の処理
+    # ③
     if tag_name.blank? && item_tag.blank?
-      # 商品に紐づく中間テーブルの情報を削除する
       # デフォルトでは、has_many :throughの関連付けの場合はdelete_allが渡されている
       item.item_tag_relations.delete_all
       return
     end
 
-    # 商品に紐付いた中間テーブルの情報が空の場合
+    # ④
     if item.item_tag_relations.blank?
-      # 商品に紐付く中間テーブルに情報を保存する
       item.item_tag_relations.create(tag_id: tag.id, item_id: item.id)
     end
     
-    # コントローラーから送られてきた中間テーブルの情報が、空ではなかったときの処理
+    # ⑤
     if item_tag.present?
       item_tag.update(tag_id: tag.id, item_id: item.id)
     else
       item.item_tag_relations.update(tag_id: tag.id, item_id: item.id)
     end
     
-
   end
 ```
 
-
+①では、params(第一引数)からtag_nameを削除しておく。
+  → itemテーブルにはtag_nameが存在しないため、商品の情報を編集しようとするとエラーが発生してしまう
