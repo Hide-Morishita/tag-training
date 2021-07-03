@@ -17,7 +17,7 @@ class ItemForm
   # :tag_nameにしているのは、itemの:nameと区別するため
   # <<バリデーション（ほぼitem.rbの流用）>>
   
-  def price_int
+  def price_int # 金額の範囲のバリデーションをnumericalityで記述した場合このメソッドは不要、inclusionで記述した場合は必要
    @price = price.to_i
   end
 
